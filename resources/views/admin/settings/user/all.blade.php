@@ -71,9 +71,11 @@
                                                 <form method="POST" action="{{ route('users.destroy', $user->id) }}" style="display:inline">
                                                     @csrf
                                                     @method('DELETE')
+                                                    @can('user-delete')
                                                     <button type="submit" class="btn btn-danger waves-effect waves-light del" onclick="return confirm('Are you sure you want to delete this record?')">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
+                                                    @endcan
                                                 </form>
                                             </div>
                                         </td>

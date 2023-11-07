@@ -107,24 +107,6 @@
                         </div>
                     </div>
 
-                    {{-- <div class="row">
-                        <div class="col-lg-8">
-                            <x-form.input name="aadhar_front_img" label="Aadhar Front side Image Upload" type="file"/>
-                        </div>
-                            <div class="col-lg-4 mt-lg-4">
-                                @if (! @empty($student->aadhar_front_img))
-                                <img src="{{asset($student->aadhar_front_img)}}" alt="studentAadharImgFront" width="50" height="50">
-                                @else
-                                <strong class="text-primary">No File</strong>
-                                @endif
-                            </div>
-                    </div> --}}
-
-
-
-
-
-
                     <div class="row">
                         <div class="col-lg-8">
                             <label for="aadhar_front_img">Aadhar Front side Image Upload</label>
@@ -134,7 +116,7 @@
                             @if (!empty($student->aadhar_front_img))
                             <img src="{{ asset($student->aadhar_front_img) }}" id="preview_aadhar_front_img" alt="studentAadharImgFront" width="50" height="50">
                             @else
-                            <strong class="text-primary">No File</strong>
+                            <img src="" id="preview_aadhar_front_img" alt="studentAadharImgFront" width="50" height="50">
                             @endif
                         </div>
                     </div>
@@ -148,7 +130,7 @@
                             @if (!empty($student->aadhar_back_img))
                             <img src="{{ asset($student->aadhar_back_img) }}" id="preview_aadhar_back_img" alt="studentAadharImgBack" width="50" height="50">
                             @else
-                            <strong class="text-primary">No File</strong>
+                            <img src="" id="preview_aadhar_back_img" alt="studentAadharImgBack" width="50" height="50">
                             @endif
                         </div>
                     </div>
@@ -162,14 +144,8 @@
                             @if (!empty($student->image))
                             <img src="{{ asset($student->image) }}" id="preview_student_image" alt="StudentIMG" width="50" height="50">
                             @else
-                            <strong class="text-primary">No File</strong>
+                            <img src="" id="preview_student_image" alt="StudentIMG" width="50" height="50">
                             @endif
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <x-form.radio label="Status" name="status" id="" :value="$student->status" />
                         </div>
                     </div>
 
@@ -185,8 +161,10 @@
 @endsection
 
 @push('script')
- {{-- Image Preview Script --}}
- <script>
+
+
+{{-- Image Preview Script --}}
+<script>
     function loadFile(event, outputId) {
         var output = document.getElementById(outputId);
         if (event.target.files && event.target.files[0]) {
@@ -195,6 +173,8 @@
                 output.src = e.target.result;
             };
             reader.readAsDataURL(event.target.files[0]);
+        } else {
+            output.src = ""; // Set the image source to blank if no file is selected
         }
     }
 </script>
