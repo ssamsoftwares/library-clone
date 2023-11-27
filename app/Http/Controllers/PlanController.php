@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\DB;
 use PDF;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Http\Response;
+use Carbon\Carbon;
 
 class PlanController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:plan-list|plan-view|plan-create|plan-edit|plan-delete', ['only' => ['view','index']]);
+        $this->middleware('permission:plan-list|plan-view|plan-create|plan-edit|plan-delete', ['only' => ['view', 'index']]);
         $this->middleware('permission:plan-view', ['only' => ['view']]);
         $this->middleware('permission:plan-create', ['only' => ['create', 'store']]);
         $this->middleware('permission:plan-edit', ['only' => ['edit', 'update']]);
@@ -23,18 +24,21 @@ class PlanController extends Controller
     }
 
 
-
-    //Show Plan List
     public function index(Request $request)
     {
         $plans = Plan::with('student');
-        if ($request->has('search')) {
-            $search = $request->input('search');
+        $search = $request->input('search');
+
+        if ($search && Carbon::hasFormat($search, 'd-m-Y')) {
+            $formattedSearchDate = Carbon::createFromFormat('d-m-Y', $search)->format('Y-m-d');
+            $plans->where(function ($query) use ($formattedSearchDate) {
+                $query->orWhere('valid_from_date', 'like', '%' . $formattedSearchDate . '%')
+                    ->orWhere('valid_upto_date', 'like', '%' . $formattedSearchDate . '%');
+            });
+        } elseif ($search) {
             $plans->where(function ($query) use ($search) {
                 $query->where('plan', 'like', '%' . $search . '%')
                     ->orWhere('mode_of_payment', 'like', '%' . $search . '%')
-                    ->orWhere('valid_from_date', 'like', '%' . $search . '%')
-                    ->orWhere('valid_upto_date', 'like', '%' . $search . '%')
                     ->orWhereHas('student', function ($studentSubquery) use ($search) {
                         $studentSubquery->where('name', 'like', '%' . $search . '%')
                             ->orWhere('email', 'like', '%' . $search . '%')
@@ -48,7 +52,6 @@ class PlanController extends Controller
 
         return view('admin.plan.all', compact('plans'));
     }
-
 
 
     //Asign Plan From
@@ -73,10 +76,22 @@ class PlanController extends Controller
         }
     }
 
-    // Plans View
-    public function view($plan){
+
+    public function view($plan)
+    {
         $plan = Plan::with('student')->find($plan);
-        return view('admin.plan.view')->with(compact('plan'));
+        $studentId = $plan->student->id;
+
+        $currentDate = Carbon::now();
+        $activePlans = Plan::where('student_id', $studentId)
+            ->where('valid_upto_date', '>=', $currentDate->format('Y-m-d'))
+            ->get();
+
+        $expiredPlans = Plan::where('student_id', $studentId)
+            ->where('valid_upto_date', '<', $currentDate->format('Y-m-d'))
+            ->get();
+
+        return view('admin.plan.view')->with(compact('plan', 'activePlans', 'expiredPlans'));
     }
 
     public function store(Request $request, Plan $plan)
@@ -93,20 +108,19 @@ class PlanController extends Controller
         try {
             $data = $request->all();
             $currentDate = date('Y-m-d');
-
+            $plan = NULL;
             $existingPlan = Plan::where('student_id', $request->student_id)
                 ->where('valid_upto_date', '>=', $currentDate)
                 ->first();
-
 
             if ($existingPlan) {
                 DB::rollBack();
                 $assignButton = "";
                 $pdfDownloadBtn = "disabled";
-                return redirect()->back()->with(["status" => "Your plan is already running.", "pdfDownloadBtn" => $pdfDownloadBtn, "assignButton" => $assignButton])->withInput();
-            } else {
-                Plan::create($data);
+                return redirect()->back()->with(["status" => "Your plan is already running.", "pdfDownloadBtn" => $pdfDownloadBtn, "assignButton" => $assignButton, "plan_id" => $existingPlan->id])->withInput();
             }
+
+            $plan = Plan::create($data);
         } catch (Exception $e) {
             DB::rollBack();
             $assignButton = "disabled";
@@ -116,7 +130,7 @@ class PlanController extends Controller
         DB::commit();
         $assignButton = "disabled";
         $pdfDownloadBtn = "";
-        return redirect()->back()->with(["status" => "Plan added successfully.", "pdfDownloadBtn" => $pdfDownloadBtn, "assignButton" => $assignButton]);
+        return redirect()->back()->with(["status" => "Plan added successfully.", "pdfDownloadBtn" => $pdfDownloadBtn, "assignButton" => $assignButton, "plan_id" => $plan->id]);
     }
 
 
@@ -132,7 +146,6 @@ class PlanController extends Controller
     public function update(Request $request, Plan $plan)
     {
         $request->validate([
-            // 'student_search' => 'required',
             'plan' => 'required',
             'mode_of_payment' => 'required',
             'valid_from_date' => 'required|date',
@@ -140,6 +153,7 @@ class PlanController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
             $data = $request->all();
             $plan->update($data);
@@ -147,10 +161,11 @@ class PlanController extends Controller
             DB::rollBack();
             return redirect()->back()->with('status', $e->getMessage());
         }
-
         DB::commit();
         return redirect()->back()->with('status', 'Plan updated successfully.');
     }
+
+
 
     // Delete plan
     public function destroy(Plan $plan)
@@ -169,15 +184,15 @@ class PlanController extends Controller
     // Download Pdf
     public function downloadPdf($id)
     {
-        $student = Student::with('plan')->find($id);
-        if (!$student) {
-            return redirect()->back()->with('status', 'Student not found or an error occurred.');
+        $plan = Plan::with('student')->find($id);
+        if (!$plan) {
+            return redirect()->back()->with('status', 'Plan not found or an error occurred.');
         }
 
         $data = [
             'title' => 'Sample PDF',
             'content' => '<p>This is the content of your PDF.</p>',
-            'student' => $student,
+            'plan' => $plan,
         ];
 
         $pdf = PDF::loadView('pdf.studentPlan', $data);
@@ -191,7 +206,7 @@ class PlanController extends Controller
             200,
             [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="k3Library student.pdf"',
+                'Content-Disposition' => 'attachment; filename="k3Library_student.pdf"',
             ]
         );
     }

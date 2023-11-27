@@ -41,7 +41,7 @@
                             <x-form.input name="confirm-password" label="Confirm Password" type="password"/>
                         </div>
                     </div>
-
+                    @if (auth()->user()->hasRole('superadmin') &&  !$user->hasrole('manager'))
                     <div class="row">
                          <div class="col-lg-3">
                          <x-form.select name="plan" label="Plan" id="plan" chooseFileComment="--Select Plan--"
@@ -54,7 +54,6 @@
                          <div class="col-lg-3">
                             <x-form.input name="add_student_limit" label="Create Student Limit"
                             :value="($user->plan === 'paid') ? 'unlimited' : $user->add_student_limit"  id="add_student_limit" />
-
                          </div>
 
                         <div class="col-lg-6">
@@ -68,7 +67,7 @@
                                 </select>
                         </div>
                     </div>
-
+                    @endif
                     <div>
                         <button class="btn btn-primary mt-2" type="submit">{{__('Update User')}}</button>
                     </div>

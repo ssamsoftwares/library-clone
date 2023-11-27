@@ -23,7 +23,10 @@
 
             <x-snippets.full-screen show="true" />
 
-            <x-snippets.notifications show="false" />
+            @hasrole('superadmin')
+            <x-snippets.notifications show="true" />
+            @endhasrole
+
 
             <x-snippets.profile-menu show="true" />
 

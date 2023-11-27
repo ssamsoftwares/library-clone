@@ -3,14 +3,14 @@
 
     <head>
         <meta charset="utf-8" />
-        
+
         @stack('page-title')
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
         <meta content="Themesdesign" name="author" />
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        
+
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ url('assets/images/favicon.ico') }}">
 
@@ -45,6 +45,58 @@
             .dataTables_filter{
              display: none;
          }
+
+         /* ACTION STYLE START */
+
+         .action-btns.text-center {
+                display: flex;
+                gap: 10px;
+            }
+
+            .ri-eye-line:before {
+                content: "\ec95";
+                position: absolute;
+                left: 13px;
+                top: 5px;
+            }
+
+            a.btn.btn-primary.waves-effect.waves-light.view {
+                width: 41px;
+                height: 32px;
+            }
+
+            .ri-pencil-line:before {
+                content: "\ef8c";
+                position: absolute;
+                left: 13px;
+                top: 5px;
+            }
+
+            a.btn.btn-info.waves-effect.waves-light.edit {
+                width: 41px;
+                height: 32px;
+            }
+
+            /* DELETE BTN */
+
+              .ri-delete-bin-line:before {
+                content: "\ec1a";
+                position: absolute;
+                left: 13px;
+                top: 5px;
+            }
+
+            a.btn.btn-danger.waves-effect.waves-light.del {
+                width: 45px;
+                height: 35px;
+            }
+
+            table.dataTable>tbody>tr.child ul.dtr-details>li {
+                white-space: nowrap !important;
+            }
+
+         /* ACTION STYLE END */
+
         </style>
     </head>
     @stack('style')

@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('admin_id')->nullable();
+            $table->unsignedBigInteger('manager_id')->nullable();
+            $table->unsignedBigInteger('lib_id')->nullable();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('password');
             $table->string('personal_number')->unique();
             $table->string('emergency_number')->nullable();
             $table->string('dob')->nullable();
@@ -33,9 +36,17 @@ return new class extends Migration
             $table->string('aadhar_back_img')->nullable();
             $table->string('image')->nullable();
             $table->enum('status',['active','block'])->default('active');
+            $table->unsignedBigInteger('created_by');
+            $table->rememberToken();
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')
+            $table->foreign('admin_id')->references('id')->on('users')
+            ->onDelete('cascade');
+            $table->foreign('manager_id')->references('id')->on('users')
+            ->onDelete('cascade');
+            $table->foreign('lib_id')->references('id')->on('libraries')
+            ->onDelete('cascade');
+            $table->foreign('created_by')->references('id')->on('users')
             ->onDelete('cascade');
         });
     }

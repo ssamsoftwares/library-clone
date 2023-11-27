@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Library;
 use App\Models\Student;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Arr;
 
 class StudentController extends Controller
 {
@@ -27,10 +29,14 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $students = Student::query();
+        $students = Student::with('createdByStudent');
 
-        if (!$user->hasRole('superadmin')) {
-            $students->where('user_id', $user->id);
+        if ($user->hasRole('admin')) {
+            $students->where('admin_id', $user->id);
+        }
+
+        if ($user->hasRole('manager')) {
+            $students->where('manager_id', $user->id);
         }
 
         if ($request->has('search')) {
@@ -40,6 +46,8 @@ class StudentController extends Controller
                     ->orWhere('email', 'like', $search . '%')
                     ->orWhere('personal_number', 'like', $search . '%')
                     ->orWhere('dob', 'like', $search . '%');
+            })->orWhereHas('createdByStudent', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
             });
         }
         $students = $students->orderBy('created_at', 'desc')->paginate(10);
@@ -51,7 +59,20 @@ class StudentController extends Controller
     // Add Student From
     public function create()
     {
-        return view('admin.student.add');
+        $user = Auth::user();
+        $filteredLibraries = NULL;
+        if ($user->hasRole('manager')) {
+            $libraries = Library::where([
+                'admin_id' => $user->created_by,
+                'status' => 'approved',
+            ])->get();
+            // Filter the results in PHP
+            $filteredLibraries = $libraries->filter(function ($library) use ($user) {
+                $managerIds = json_decode($library->manager_id);
+                return $managerIds && in_array($user->id, $managerIds);
+            })->pluck('library_name', 'id')->toArray();
+        }
+        return view('admin.student.add', compact('filteredLibraries'));
     }
 
     // Store Student
@@ -61,18 +82,20 @@ class StudentController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'string|email|max:255|unique:students',
+            'password' => 'required|same:confirm-password',
             'personal_number' => 'required|unique:students',
             'aadhar_number' => 'required|unique:students',
         ]);
 
-        // dd($request->all());
-
         DB::beginTransaction();
         try {
-            if (auth()->user()->add_student_limit != "unlimited") {
-                $addLimit = Student::where('user_id', auth()->user()->id)->count();
-                if ($addLimit >= auth()->user()->add_student_limit) {
-                    return redirect()->back()->with('status', "Dear " . auth()->user()->name . " Your Student Add Limit Only " . auth()->user()->add_student_limit);
+            $user = auth()->user();
+            if ($user->hasRole('admin')) {
+                if ($user->add_student_limit != "unlimited") {
+                    $addLimit = Student::where('admin_id', auth()->user()->id)->count();
+                    if ($addLimit >= auth()->user()->add_student_limit) {
+                        return redirect()->back()->with('status', "Dear " . auth()->user()->name . " Your Student Add Limit Only " . auth()->user()->add_student_limit);
+                    }
                 }
             }
 
@@ -100,7 +123,18 @@ class StudentController extends Controller
                 $studentImg->move(public_path('student_img'), $filename);
                 $data['image'] = 'student_img/' . $filename;
             }
-            $data['user_id'] = auth()->user()->id;
+
+            // Set admin and manager IDs
+            $data['created_by'] = $user->id;
+            if ($user->hasRole('admin')) {
+                $data['admin_id'] = $user->id;
+                $data['manager_id'] = null;
+            } else {
+                $data['admin_id'] = $user->hasRole('superadmin') ? null : $user->created_by;
+                $data['manager_id'] = $user->id;
+            }
+
+            // Create student
             Student::create($data);
         } catch (Exception $e) {
             DB::rollBack();
@@ -123,27 +157,14 @@ class StudentController extends Controller
     }
 
     // Update Student
-
-
     public function update(Request $request, Student $student)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', Rule::unique('students', 'email')->ignore($student->id)],
+            'password' => 'same:confirm-password',
             'personal_number' => ['required', Rule::unique('students', 'personal_number')->ignore($student->id)],
             'aadhar_number' =>  ['required', Rule::unique('students', 'aadhar_number')->ignore($student->id)],
-            // 'emergency_number' => ['required'],
-            // 'dob' => ['required'],
-            // 'course' => ['required'],
-            // 'current_address' => ['required'],
-            // 'permanent_address' => ['required'],
-            // 'valid_from_date' => ['required'],
-            // 'valid_upto_date' => ['required'],
-            // 'mode_of_payment' => ['required'],
-            // 'subscription' => ['required'],
-            // 'remark_singnature' => ['required'],
-            // 'hall_number' => ['required'],
-            // 'vehicle_number' => ['required'],
             'aadhar_front_img' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'aadhar_back_img' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'image' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
@@ -191,6 +212,12 @@ class StudentController extends Controller
                 $filename = uniqid() . '.' . $studentImg->getClientOriginalExtension();
                 $studentImg->move(public_path('student_img'), $filename);
                 $data['image'] = 'student_img/' . $filename;
+            }
+
+            if (!empty($data['password'])) {
+                $data['password'] = $data['password'];
+            } else {
+                $data = Arr::except($data, array('password'));
             }
 
             $student->update($data);

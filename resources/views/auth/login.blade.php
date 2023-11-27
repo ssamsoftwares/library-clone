@@ -1,6 +1,6 @@
 <x-guest-layout>
    <!-- Session Status -->
-
+   <x-status-message />
    <div class="wrapper-page">
                   <h4 class="text-muted text-center font-size-18"><b>Sign In</b></h4>
                   <div class="p-3">
@@ -42,9 +42,9 @@
                               <a href="{{ route('password.request') }}" class="text-muted"><i class="mdi mdi-lock"></i> {{ __('Forgot your password?') }}</a>
                            </div> --}}
 
-                           {{-- <div class="col-sm-5 mt-3">
-                            <a href="{{ route('register') }}" class="text-muted"><i class="mdi mdi-account-circle"></i> Create an account</a>
-                        </div> --}}
+                           <div class="col-sm-5 mt-3">
+                            <a href="{{route('user.registrationRequest')}}" class="text-muted"><i class="mdi mdi-account-circle"></i> Create an account</a>
+                        </div>
                         </div>
                      </form>
                   </div>

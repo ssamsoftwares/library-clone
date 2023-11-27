@@ -21,7 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password','add_student_limit','plan','created_by'
+        'password','add_student_limit','plan','created_by','normal_password'
     ];
 
     /**
@@ -31,7 +31,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
+        'remember_token','normal_password'
     ];
 
     /**
@@ -45,10 +45,15 @@ class User extends Authenticatable
     ];
 
 
-
     public function createdByUser()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+
+    public function libraries()
+    {
+        return $this->hasMany(Library::class, 'admin_id');
     }
 
 }

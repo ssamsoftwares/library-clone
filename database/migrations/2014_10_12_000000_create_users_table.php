@@ -16,10 +16,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
+            $table->string('normal_password')->nullable();
             $table->string('add_student_limit')->nullable();
             $table->enum('plan',['free','paid'])->comment('free,paid')->nullable()->default(null);
             $table->unsignedBigInteger('created_by')->nullable();
+            $table->enum('register_type', ['internal', 'external'])->nullable()->default('internal');
             $table->rememberToken();
             $table->timestamps();
 

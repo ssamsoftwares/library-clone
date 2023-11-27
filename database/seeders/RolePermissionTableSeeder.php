@@ -55,5 +55,18 @@ class RolePermissionTableSeeder extends Seeder
         foreach ($permissions as $permission) {
             Permission::create($permission);
         }
+
+
+         // Assign specific permissions to roles
+         $adminRole = Role::where('name', 'admin')->first();
+         $adminRole->syncPermissions([
+             'student-list', 'student-view', 'student-create','student-edit','student-delete',
+             'user-list','user-view','user-create','user-edit','user-delete'
+         ]);
+
+         $managerRole = Role::where('name', 'manager')->first();
+         $managerRole->syncPermissions([
+            'student-list', 'student-view', 'student-create','student-edit','student-delete'
+         ]);
     }
 }

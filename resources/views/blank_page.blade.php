@@ -1,11 +1,11 @@
 @extends('layouts.main')
 
 @push('page-title')
-    <title>{{'Terms'}}</title>
+    <title>{{'Blank page'}}</title>
 @endpush
 
 @push('heading')
-    {{ 'Terms'}}
+    {{ 'Blank page'}}
 @endpush
 
 @section('content')
@@ -13,7 +13,7 @@
 <div class='row'>
     <div class="col align-items-center justify-content-center">
         <h2>
-            Terms Page
+            Blank Page
         </h2>
     </div>
 </div>

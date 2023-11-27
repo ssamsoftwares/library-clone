@@ -80,11 +80,12 @@ class UserController extends Controller
             return $response;
         }
         $authUser = Auth::user();
-        // Check if the authenticated user has a superadmin role.
+        //  user has a superadmin role.
         if ($authUser->hasRole('superadmin')) {
-            $roles = Role::whereIn('name', ['admin', 'manager'])->pluck('name', 'name')->all();
+            // $roles = Role::whereIn('name', ['admin', 'manager'])->pluck('name', 'name')->all();
+             $roles = Role::whereIn('name', ['admin'])->pluck('name', 'name')->all();
         }
-        // Check if the authenticated user has an admin role.
+        // user has an admin role.
         elseif ($authUser->hasRole('admin')) {
             $roles = Role::whereIn('name', ['manager'])->pluck('name', 'name')->all();
         }
@@ -112,6 +113,7 @@ class UserController extends Controller
 
             $input = $request->all();
             $input['password'] = Hash::make($input['password']);
+            $input['normal_password'] = $request->password;
             $input['created_by'] = Auth::id();
 
             $authUser = Auth::user();
@@ -123,7 +125,6 @@ class UserController extends Controller
                     $input['add_student_limit'] = "unlimited";
                 }
             }
-
             $user = User::create($input);
             // dd($request->input('roles'));
             $user->assignRole([$role->id]);
@@ -151,7 +152,8 @@ class UserController extends Controller
     public function edit($id): View
     {
         $user = User::find($id);
-        $roles = Role::pluck('name', 'name')->all();
+        // $roles = Role::pluck('name', 'name')->all();
+        $roles = Role::whereIn('name', ['admin'])->pluck('name', 'name')->all();
         $userRole = $user->roles->pluck('name', 'name')->all();
 
         return view('admin.settings.user.edit', compact('user', 'roles', 'userRole'));
@@ -175,6 +177,7 @@ class UserController extends Controller
         try {
             $input = $request->all();
             if (!empty($input['password'])) {
+                $input['normal_password'] = $request->password;
                 $input['password'] = Hash::make($input['password']);
             } else {
                 $input = Arr::except($input, array('password'));
@@ -193,7 +196,7 @@ class UserController extends Controller
 
             $user = User::find($id);
             $user->update($input);
-            // dd($user);
+            
             DB::table('model_has_roles')->where('model_id', $id)->delete();
             $user->assignRole($request->input('roles'));
         } catch (Exception $e) {

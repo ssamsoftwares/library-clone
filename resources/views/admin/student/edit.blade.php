@@ -40,14 +40,23 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <x-form.input name="email" label="Email Address" :value="$student->email" />
-                        </div>
-
-                        <div class="col-lg-6">
                             <x-form.input name="dob" label="DOB" type="date" :value="$student->dob" />
                         </div>
 
+                        <div class="col-lg-6">
+                            <x-form.input name="email" label="Email Address" :value="$student->email" />
+                        </div>
                     </div>
+
+                        {{-- <div class="row">
+                            <div class="col-lg-6">
+                                <x-form.input name="password" label="Passsword" type="password"/>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <x-form.input name="confirm-password" label="Confirm Password" type="password"/>
+                            </div>
+                        </div> --}}
 
                     <div class="row">
                         <div class="col-lg-12">
@@ -55,24 +64,8 @@
                         </div>
                     </div>
 
-
                     <div class="row">
-                        <div class="col-lg-6">
-                                <x-form.input name="payment" label="Payment" type="text" :value="$student->payment"  />
-                            </div>
-
-                        <div class="col-lg-6">
-                                <x-form.input name="pending_payment" label="Pending Payment" type="text" :value="$student->pending_payment"  />
-                            </div>
-                     </div>
-
-
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <x-form.input name="subscription" label="Subscription" :value="$student->subscription" />
-                        </div>
-
-                        <div class="col-lg-6">
+                        <div class="col-lg-12">
                             <x-form.input name="remark_singnature" label="Remark Singnature" :value="$student->remark_singnature" />
                         </div>
                     </div>
@@ -116,7 +109,7 @@
                             @if (!empty($student->aadhar_front_img))
                             <img src="{{ asset($student->aadhar_front_img) }}" id="preview_aadhar_front_img" alt="studentAadharImgFront" width="50" height="50">
                             @else
-                            <img src="" id="preview_aadhar_front_img" alt="studentAadharImgFront" width="50" height="50">
+                            <img src="" id="preview_aadhar_front_img" alt="" width="50" height="50">
                             @endif
                         </div>
                     </div>
@@ -130,7 +123,7 @@
                             @if (!empty($student->aadhar_back_img))
                             <img src="{{ asset($student->aadhar_back_img) }}" id="preview_aadhar_back_img" alt="studentAadharImgBack" width="50" height="50">
                             @else
-                            <img src="" id="preview_aadhar_back_img" alt="studentAadharImgBack" width="50" height="50">
+                            <img src="" id="preview_aadhar_back_img" alt="" width="50" height="50">
                             @endif
                         </div>
                     </div>
@@ -144,7 +137,7 @@
                             @if (!empty($student->image))
                             <img src="{{ asset($student->image) }}" id="preview_student_image" alt="StudentIMG" width="50" height="50">
                             @else
-                            <img src="" id="preview_student_image" alt="StudentIMG" width="50" height="50">
+                            <img src="" id="preview_student_image" alt="" width="50" height="50">
                             @endif
                         </div>
                     </div>
