@@ -173,7 +173,12 @@
                                                 class="btn btn-info waves-effect waves-light edit">
                                                 <i class="ri-pencil-line"></i>
                                             </a> --}}
-                                                <form method="POST"
+
+
+                                            <a href="{{ route('library.managerRemove', ['manager_id' => $manager->id, 'lib_id' => $library->id]) }}" class="btn btn-danger waves-effect waves-light del"
+                                            onclick="return confirm('Are you sure you want to remove this manager?')"> <i class="ri-delete-bin-line"></i></a>
+
+                                                {{-- <form method="POST"
                                                     action="{{ route('library.managerRemove', ['manager_id' => $manager->id, 'lib_id' => $library->id]) }}"
                                                     style="display:inline">
                                                     @csrf
@@ -183,7 +188,7 @@
                                                         onclick="return confirm('Are you sure you want to remove this manager?')">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
-                                                </form>
+                                                </form> --}}
                                             </div>
                                         </td>
                                     </tr>

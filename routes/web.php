@@ -75,7 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Route::get('/library-status-update/{id}', [LibraryController::class, 'libraryStatusUpdate'])->name('library.statusUpdate');
 
-    Route::delete('/library-manager-remove/{manager_id?}/{lib_id?}', [LibraryController::class, 'libraryManagerRemove'])->name('library.managerRemove');
+    Route::get('/library-manager-remove/{manager_id?}/{lib_id?}', [LibraryController::class, 'libraryManagerRemove'])->name('library.managerRemove');
 
     Route::get('/library-student-view/{admin_id?}/{manager_id?}/{lib_id?}', [LibraryController::class, 'libraryStudentView'])->name('library.libraryStudentView');
 

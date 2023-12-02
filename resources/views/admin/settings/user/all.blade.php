@@ -35,7 +35,8 @@
                                         <th>{{ 'Password' }}</th>
                                     @endif
                                     <th>{{ 'Role' }}</th>
-                                    <th>{{ 'Plan Status' }}</th>
+                                    @if (auth()->user()->hasrole('superadmin'))
+                                    <th>{{ 'Plan Status' }}</th> @endif
                                     <th>{{ 'Created By' }}</th>
                                     <th>{{ 'Actions' }}</th>
 
@@ -59,8 +60,8 @@
                                                     @endforeach
                                                 @endif
                                             </td>
-
-                                            <td>{{ !empty($user->plan) ? $user->plan : 'paid' }}</td>
+                                            @if (auth()->user()->hasrole('superadmin'))
+                                            <td>{{ !empty($user->plan) ? $user->plan : 'paid' }}</td>@endif
                                             <td>
                                                 {{ !empty($user->createdByUser->name) ? $user->createdByUser->name : null }}
                                             </td>

@@ -45,7 +45,7 @@ class StudentController extends Controller
                 $subquery->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', $search . '%')
                     ->orWhere('personal_number', 'like', $search . '%')
-                    ->orWhere('dob', 'like', $search . '%');
+                    ->orWhere('status', 'like', $search . '%');
             })->orWhereHas('createdByStudent', function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%');
             });
